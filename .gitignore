@@ -1,0 +1,28 @@
+# Planning docs (local only)
+.planning/
+
+# Dependencies
+node_modules/
+
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+
+# User config (contains personal feed URLs; example is committed instead)
+config.json
+!config.example.json
+
+# Runtime data
+data/
+logs/
+output/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+.vscode/
+*.swp
+*.swo
