@@ -1,0 +1,22 @@
+{
+  "feeds": [
+    {
+      "url": "https://example.com/rss",
+      "category": "개발"
+    },
+    {
+      "url": "https://another-example.com/feed.xml",
+      "category": "AI"
+    },
+    {
+      "url": "https://yet-another.com/rss.xml",
+      "category": "비즈니스"
+    }
+  ],
+  "schedule": {
+    "hour": 7
+  },
+  "email": {
+    "to": "your-email@gmail.com"
+  }
+}
