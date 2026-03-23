@@ -18,6 +18,12 @@ data/
 logs/
 output/
 
+# Claude Code internal
+.claude/
+
+# Company internal docs
+company_claude.txt
+
 # OS artifacts
 .DS_Store
 Thumbs.db
