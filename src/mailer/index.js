@@ -33,11 +33,12 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<object>} nodemailer info object
  */
 export async function sendNewsletter({ subject, html, text }, config) {
-  log.info('Sending email', { to: config.email.to, subject });
+  const to = Array.isArray(config.email.to) ? config.email.to.join(', ') : config.email.to;
+  log.info('Sending email', { to, subject });
 
   const info = await transporter.sendMail({
     from:    process.env.GMAIL_USER,
-    to:      config.email.to,
+    to,
     subject,
     text,
     html,

@@ -3,10 +3,8 @@ import { readFileSync } from 'fs';
 import { ConfigSchema } from './schema.js';
 
 // 필수 환경 변수 목록
-// 회사 내부 Claude API 게이트웨이 사용 (company_claude.txt 참고)
 const REQUIRED_ENV = [
   'ANTHROPIC_API_KEY',
-  'ANTHROPIC_BASE_URL',
   'GMAIL_USER',
   'GMAIL_APP_PASSWORD',
 ];
@@ -65,7 +63,7 @@ export function validateEnv() {
 export function getAnthropicConfig() {
   const config = {
     apiKey: process.env.ANTHROPIC_API_KEY,
-    baseURL: process.env.ANTHROPIC_BASE_URL,
+    baseURL: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com',
     defaultHeaders: {},
   };
 

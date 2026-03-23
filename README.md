@@ -94,6 +94,12 @@ Edit `config.json`:
 }
 ```
 
+**Multiple recipients** — `email.to` accepts a single address or an array:
+
+```json
+"email": { "to": ["alice@gmail.com", "bob@company.com"] }
+```
+
 ---
 
 ## Usage
@@ -125,34 +131,21 @@ npm run dry-run  # preview only
 
 ## Automation (Windows Task Scheduler)
 
-### Quick setup via PowerShell (run as Administrator)
+### Step 1 — Create the scheduled task (once)
 
-```powershell
-$action = New-ScheduledTaskAction `
-    -Execute 'C:\Program Files\nodejs\node.exe' `
-    -Argument '--env-file=.env src/cli.js run' `
-    -WorkingDirectory 'C:\path\to\newsletter-cli'
+Double-click **`setup-newsletter-task.bat`** and run as Administrator.
 
-$trigger = New-ScheduledTaskTrigger -Daily -At '07:00'
+This creates a "Daily Newsletter" task that runs `run-newsletter.bat` every day at 07:00.
 
-$settings = New-ScheduledTaskSettingsSet `
-    -MultipleInstances IgnoreNew `
-    -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
+> If it fails, right-click the file → **Run as administrator**.
 
-Register-ScheduledTask `
-    -TaskName 'Daily Newsletter' `
-    -Action $action -Trigger $trigger -Settings $settings `
-    -Description 'Daily newsletter via Claude AI'
-```
+### Step 2 — Enable / Disable
 
-> **Important:** Set `-WorkingDirectory` to the absolute path of your project folder. Without it, the task cannot find `config.json`, `.env`, or the `data/` and `logs/` directories.
-
-### Enable / Disable the schedule
-
-Double-click the included batch files:
+After the task is created, use the included batch files:
 
 | File | Action |
 |------|--------|
+| `setup-newsletter-task.bat` | Create the scheduled task (run once as Admin) |
 | `newsletter-on.bat` | Enable daily schedule |
 | `newsletter-off.bat` | Disable daily schedule |
 | `run-newsletter.bat` | Send newsletter right now |
@@ -171,7 +164,7 @@ schtasks /Change /TN "Daily Newsletter" /DISABLE
 |-----|---------|
 | General | Name: `Daily Newsletter` |
 | Triggers | Daily at 07:00 |
-| Actions | Program: `node.exe` · Arguments: `--env-file=.env src/cli.js run` · **Start in: `<project folder>`** |
+| Actions | Program: `cmd` · Arguments: `/c "C:\path\to\run-newsletter.bat"` |
 | Settings | If already running: **Do not start a new instance** |
 
 ---
@@ -208,6 +201,7 @@ Then run again. The state file will be rebuilt from scratch after the next succe
 | `EAUTH 535` on SMTP test | Wrong password | Use App Password, not Google account password |
 | `EAUTH 534` on SMTP test | 2FA not enabled | Enable 2-Step Verification in Google account |
 | `ECONNREFUSED` on SMTP test | Port 587 blocked | Check firewall / VPN |
+| `newsletter-on.bat` shows error | Task not created yet | Run `setup-newsletter-task.bat` as Administrator first |
 | Task Scheduler result `0x1` | Pipeline error | Check `logs/YYYY-MM-DD.log` for `ERROR` entries |
 | Task Scheduler result `0x41301` | Task still running | Wait; previous run may be slow (AI summarization) |
 
@@ -256,9 +250,10 @@ newsletter-cli/
 │   └── YYYY-MM-DD.log      # Auto-generated, gitignored
 ├── output/
 │   └── preview-*.html      # --dry-run previews, gitignored
-├── newsletter-on.bat        # Enable Task Scheduler job
-├── newsletter-off.bat       # Disable Task Scheduler job
-├── run-newsletter.bat       # Run immediately
+├── setup-newsletter-task.bat  # Create Task Scheduler job (run once as Admin)
+├── newsletter-on.bat          # Enable Task Scheduler job
+├── newsletter-off.bat         # Disable Task Scheduler job
+├── run-newsletter.bat         # Run immediately
 ├── config.json              # Your feed config (gitignored)
 ├── config.example.json      # Config template (committed)
 ├── .env                     # Your secrets (gitignored)

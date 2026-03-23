@@ -95,6 +95,12 @@ copy config.example.json config.json
 }
 ```
 
+**여러 명에게 동시 발송** — `email.to`에 주소 하나 또는 배열을 지정합니다:
+
+```json
+"email": { "to": ["alice@gmail.com", "bob@company.com"] }
+```
+
 ---
 
 ## 사용법
@@ -126,34 +132,21 @@ npm run dry-run  # 미리보기만
 
 ## 자동화 (Windows Task Scheduler)
 
-### PowerShell로 빠른 설정 (관리자 권한)
+### Step 1 — 예약 작업 최초 생성
 
-```powershell
-$action = New-ScheduledTaskAction `
-    -Execute 'C:\Program Files\nodejs\node.exe' `
-    -Argument '--env-file=.env src/cli.js run' `
-    -WorkingDirectory 'C:\경로\newsletter-cli'   # ← 실제 경로로 변경
+**`setup-newsletter-task.bat`** 을 마우스 우클릭 → **관리자 권한으로 실행**.
 
-$trigger = New-ScheduledTaskTrigger -Daily -At '07:00'
+매일 오전 07:00에 `run-newsletter.bat`을 실행하는 "Daily Newsletter" 작업이 생성됩니다.
 
-$settings = New-ScheduledTaskSettingsSet `
-    -MultipleInstances IgnoreNew `
-    -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
+> 실패 시 우클릭 → **관리자 권한으로 실행** 으로 다시 시도하세요.
 
-Register-ScheduledTask `
-    -TaskName 'Daily Newsletter' `
-    -Action $action -Trigger $trigger -Settings $settings `
-    -Description 'Daily newsletter via Claude AI'
-```
+### Step 2 — 켜기 / 끄기
 
-> **중요:** `-WorkingDirectory`는 반드시 프로젝트 폴더의 절대 경로를 입력해야 합니다. 없으면 `config.json`, `.env`, `data/`, `logs/` 경로를 찾지 못합니다.
-
-### 자동 발송 켜기 / 끄기
-
-포함된 배치 파일을 더블클릭하세요:
+작업 생성 후에는 포함된 배치 파일을 더블클릭으로 제어합니다:
 
 | 파일 | 동작 |
 |------|------|
+| `setup-newsletter-task.bat` | 예약 작업 생성 (최초 1회, 관리자 권한) |
 | `newsletter-on.bat` | 매일 자동 발송 켜기 |
 | `newsletter-off.bat` | 매일 자동 발송 끄기 |
 | `run-newsletter.bat` | 지금 즉시 발송 |
@@ -172,7 +165,7 @@ schtasks /Change /TN "Daily Newsletter" /DISABLE
 |----|--------|
 | 일반 | 이름: `Daily Newsletter` |
 | 트리거 | 매일 오전 07:00 |
-| 동작 | 프로그램: `node.exe` · 인수: `--env-file=.env src/cli.js run` · **시작 위치: `<프로젝트 폴더>`** |
+| 동작 | 프로그램: `cmd` · 인수: `/c "C:\경로\run-newsletter.bat"` |
 | 설정 | 이미 실행 중이면: **새 인스턴스를 시작하지 않음** |
 
 ---
@@ -209,6 +202,7 @@ del data\sent-articles.json
 | `EAUTH 535` (SMTP 테스트) | 잘못된 비밀번호 | 앱 비밀번호 사용 (Google 계정 비밀번호 ❌) |
 | `EAUTH 534` (SMTP 테스트) | 2단계 인증 미활성화 | Google 계정에서 2단계 인증 먼저 활성화 |
 | `ECONNREFUSED` (SMTP 테스트) | 포트 587 차단 | 방화벽 / VPN 확인 |
+| `newsletter-on.bat` 실행 오류 | 예약 작업 미생성 | `setup-newsletter-task.bat`을 관리자 권한으로 먼저 실행 |
 | Task Scheduler 결과 `0x1` | 파이프라인 오류 | `logs/YYYY-MM-DD.log`의 `ERROR` 항목 확인 |
 | Task Scheduler 결과 `0x41301` | 아직 실행 중 | 대기 (AI 요약 시간 소요) |
 
@@ -257,9 +251,10 @@ newsletter-cli/
 │   └── YYYY-MM-DD.log      # 자동 생성, gitignore
 ├── output/
 │   └── preview-*.html      # --dry-run 미리보기, gitignore
-├── newsletter-on.bat        # 자동 발송 켜기
-├── newsletter-off.bat       # 자동 발송 끄기
-├── run-newsletter.bat       # 지금 즉시 발송
+├── setup-newsletter-task.bat  # 예약 작업 생성 (최초 1회, 관리자 권한)
+├── newsletter-on.bat          # 자동 발송 켜기
+├── newsletter-off.bat         # 자동 발송 끄기
+├── run-newsletter.bat         # 지금 즉시 발송
 ├── config.json              # 피드 설정 (gitignore — 개인 정보 포함)
 ├── config.example.json      # 설정 템플릿 (커밋됨)
 ├── .env                     # API 키, Gmail 비밀번호 (gitignore)

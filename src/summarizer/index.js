@@ -14,7 +14,7 @@ const MODEL           = 'claude-sonnet-4-6';
 const RETRY_DELAYS_MS = [2000, 4000, 8000]; // SUMM-03: 2s / 4s / 8s backoff
 
 // ---------------------------------------------------------------------------
-// SDK — initialized once at module level with company internal API gateway
+// SDK — initialized once at module level
 // ---------------------------------------------------------------------------
 
 const client = new Anthropic(getAnthropicConfig());

@@ -11,7 +11,11 @@ const ScheduleSchema = z.object({
 });
 
 const EmailSchema = z.object({
-  to: z.string().email({ message: 'email.to must be a valid email address' }),
+  to: z.union([
+    z.string().email({ message: 'email.to must be a valid email address' }),
+    z.array(z.string().email({ message: 'email.to entries must be valid email addresses' }))
+      .min(1, { message: 'email.to array must not be empty' }),
+  ]),
 });
 
 export const ConfigSchema = z.object({
